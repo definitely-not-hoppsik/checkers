@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+from pygame import mouse
 import pygame.locals as GAME_GLOBALS
 import pygame.event as GAME_EVENTS
 import pygame.time as GAME_TIME
@@ -93,15 +94,27 @@ class Grid(pygame.sprite.Sprite):
     def get_grid(self):
         return self.grid
 
-    def drag_and_drop(self, mouse_sprite_location):
+    def get_clicked_piece_coords(self, mouse_sprite_location):
         mouse_sprite = mouse_sprite_location
         pieces = self.get_pieces()
+        coords = None
+        selected_piece = None
 
         for piece in pieces:
             if pygame.sprite.collide_rect(piece, mouse_sprite):
-                print('hi')
-                print(piece.y_coord//SQUARE_SIZE-1,
-                      piece.x_coord//SQUARE_SIZE-1)
+                mouse_pos = pygame.mouse.get_pos()
+                coords = (mouse_pos[1]//SQUARE_SIZE,
+                          mouse_pos[0]//SQUARE_SIZE)
+                selected_piece = piece
+                break
+
+        if coords is not None and selected_piece is not None:
+            return (selected_piece, coords)
+        return None, None
+
+    def drag_and_drop(self, selected_piece, piece_coords):
+        mouse_pos = pygame.mouse.get_pos()
+        selected_piece.move(mouse_pos)
 
     def make_sprites(self):
 
@@ -187,27 +200,38 @@ grid = Grid()
 # mouse stuff
 mouse_sprite_location = Sprite_mouse_location()
 
+selected_piece = None
+piece_coords = None
+grid.make_sprites()
+
 while True:
 
+    mouse_pos = pygame.mouse.get_pos()
     for event in GAME_EVENTS.get():
         if event.type == GAME_GLOBALS.QUIT:
             game_quit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 game_quit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pieces = grid.get_pieces()
+            for piece in pieces:
+                if pygame.sprite.collide_rect(piece, mouse_sprite_location):
+                    coords = (mouse_pos[1]//SQUARE_SIZE,
+                              mouse_pos[0]//SQUARE_SIZE)
+                    selected_piece = piece
+                    break
+        if event.type == pygame.MOUSEBUTTONUP:
+            selected_piece = None
 
-    #mouse_x_coord, mouse_y_coord = mouse_sprite.get_square_under_mouse()
-#    print(mouse_x_coord, mouse_y_coord)
-
-    all_sprites = grid.get_all_sprites()
-
-    all_sprites.update()
-    # mouse_sprite.update()
+    if selected_piece is not None:
+        selected_piece.move(
+            (mouse_pos[0]+SQUARE_SIZE//2, mouse_pos[1]+SQUARE_SIZE//2))
     surface.fill((0, 0, 0))
-    all_sprites.draw(surface)
+    all_sprites = grid.get_all_sprites()
+    all_sprites.update()
     mouse_sprite_location.update()
-    grid.make_sprites()
-    grid.drag_and_drop(mouse_sprite_location)
+    all_sprites.draw(surface)
 
     clock.tick(30)
     pygame.display.update()
