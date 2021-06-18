@@ -32,7 +32,6 @@ class Board:
     def _add_piece(self, piece, coords) -> None:
         self._piece_count[piece] += 1
         self._set_square(coords, piece)
-        print(self._piece_count)
 
     def _remove_piece(self, coords) -> None:
         empty_square = None
@@ -40,7 +39,6 @@ class Board:
 
         self._piece_count[piece] -= 1
         self._set_square(coords, empty_square)
-        print(self._piece_count)
 
     def _can_promote(self, piece: str, coords: tuple) -> bool:
         x_coord, _ = coords
@@ -142,19 +140,23 @@ class Game:
             while True:
                 start_coords, end_coords = func(self)
                 piece = self._board._get_square(start_coords)
+                middle_coords = self._board._get_mid_point(
+                    start_coords, end_coords)
+                middle_piece = self._board._get_square(middle_coords)
                 captures = vd.get_captures(piece, start_coords)
-                print('ccccccccccc', captures)
-                if vd.is_capture_possible(piece, start_coords) and end_coords not in captures:
-                    print('Invalid input from force jump decorator')
+                if vd.is_capture_possible(piece, start_coords, middle_piece) == True:
+                    if end_coords not in captures:
+                        print('Invalid input from force jump decorator')
                 else:
                     break
+
             coords = (start_coords, end_coords)
             return coords
 
         return _validate_input
 
-    @_validate_input_decorator
-    @_force_jump_decorator
+    # @_force_jump_decorator
+    # @_validate_input_decorator
     def _get_input(self) -> tuple:
         while True:
             try:
@@ -165,7 +167,7 @@ class Game:
                 print('Invalid input while getting input')
 
         coords = (start_coords, end_coords)
-        print(coords)
+        print('slfa', coords)
 
         return coords
 

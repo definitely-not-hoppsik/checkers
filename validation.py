@@ -32,10 +32,11 @@ def get_captures(piece: str, start_coords) -> list:
     return captures
 
 
-def is_capture_possible(piece: str, start_coords) -> bool:
+def is_capture_possible(piece: str, start_coords: tuple, middle_piece: str) -> bool:
     captures = sc.scan_for_capture_coords(piece, start_coords)
+    print(middle_piece)
 
-    if not captures:
+    if not captures or middle_piece is None:
         return False
 
     return True

@@ -5,6 +5,7 @@ from pygame import mouse
 import pygame.locals as GAME_GLOBALS
 import pygame.event as GAME_EVENTS
 import pygame.time as GAME_TIME
+import checkers_engine as ce
 
 
 WHITE = (255, 255, 255)
@@ -141,7 +142,8 @@ class Square(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = coords
 
     def stick(self, piece):
-        piece.move(self.rect.centerx, self.rect.centery)
+        piece.move((self.rect.centerx+SQUARE_SIZE//2,
+                   self.rect.centery+SQUARE_SIZE//2))
 
 
 class Piece(pygame.sprite.Sprite):
@@ -217,16 +219,23 @@ while True:
             pieces = grid.get_pieces()
             for piece in pieces:
                 if pygame.sprite.collide_rect(piece, mouse_sprite_location):
-                    coords = (mouse_pos[1]//SQUARE_SIZE,
-                              mouse_pos[0]//SQUARE_SIZE)
+                    selected_piece_coords = (mouse_pos[1]//SQUARE_SIZE,
+                                             mouse_pos[0]//SQUARE_SIZE)
                     selected_piece = piece
                     break
         if event.type == pygame.MOUSEBUTTONUP:
-            selected_piece = None
+            squares = grid.get_grid()
+            for square in squares:
+                if pygame.sprite.collide_rect(square, mouse_sprite_location) and selected_piece is not None:
+                    square.stick(selected_piece)
+
+                    selected_piece = None
+                    break
 
     if selected_piece is not None:
         selected_piece.move(
             (mouse_pos[0]+SQUARE_SIZE//2, mouse_pos[1]+SQUARE_SIZE//2))
+
     surface.fill((0, 0, 0))
     all_sprites = grid.get_all_sprites()
     all_sprites.update()
